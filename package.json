@@ -1,6 +1,6 @@
 {
   "name": "gitsmv",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Display dashboard with statuses of submodules",
   "license": "MIT",
   "repository": "elmccd/gitsmv",
@@ -18,12 +18,16 @@
   },
   "files": [
     "index.js",
+    "methods.js",
     "cli.js"
   ],
   "keywords": [
     "cli-app",
     "cli",
-    ""
+    "git",
+    "submodules",
+    "status",
+    "dashboard"
   ],
   "dependencies": {
     "async": "^2.0.0-rc.4",
