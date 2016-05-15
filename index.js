@@ -36,7 +36,7 @@ const exec = path => (command, callback) => {
 	});
 };
 
-var getSubModules = (dir, cb) => {
+const getSubModules = (dir, cb) => {
 	return exec(dir)(`git config --file .gitmodules --get-regexp path | awk '{ print $2 }'`, cb);
 };
 
@@ -127,7 +127,7 @@ const columns = [
 	},
 	{
 		id: 'lastCommitData',
-		resolve: methods => methods.lastCommitDatas
+		resolve: methods => methods.lastCommitData
 	}
 ];
 
@@ -146,7 +146,7 @@ const readForPath = path => callback => {
 
 const transformToDisplay = results => {
 	return results.map((result) => {
-		var obj = {};
+		const obj = {};
 
 		columns.forEach((column, index) => {
 			obj[column.id] = (column.transform || identity)(result[index]);
@@ -156,7 +156,7 @@ const transformToDisplay = results => {
 	});
 };
 
-const readPaths = (paths) => {
+const readPaths = (paths, callback) => {
 	const pathData = paths.map(readForPath);
 
 	async.parallel(pathData, (err, results) => {
@@ -167,14 +167,14 @@ const readPaths = (paths) => {
 			log(err);
 		}
 
-		console.log(toDisplayColumnify);
+		callback(toDisplayColumnify);
 	});
 };
 
-var cli = opt => {
+const cli = (opt, callback) => {
 	Object.assign(options, opt);
 
-	readGitModules('./', paths => readPaths(paths));
+	readGitModules('./', paths => readPaths(paths, callback));
 };
 
 module.exports = cli;

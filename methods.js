@@ -1,4 +1,3 @@
-const asyncOnce = require('async-once');
 const async = require('async');
 
 module.exports = function (exec, options) {
@@ -11,7 +10,7 @@ module.exports = function (exec, options) {
 	var fetchOrigin = (res, cb) => {
 		if (options.fetch) {
 			let branch = res.upBranch.replace(/^origin\//, '');
-			return exec(`git fetch origin ${branch}`, cb)
+			exec(`git fetch origin ${branch}`, cb);
 		} else {
 			cb(null, null);
 		}

@@ -15,4 +15,6 @@ var cli = meow([
 	'  $ gitsmv'
 ]);
 
-gitsmv(cli.flags);
+gitsmv(cli.flags, res => {
+	console.log(res);
+});

@@ -22,6 +22,7 @@ $ gitsmv --help
     gitsmv [input]
 
   Options
+    --fetch  Fetch upstream branches [Default: false]
     --debug  Display executed commands [Default: false]
 
   Examples
