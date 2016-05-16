@@ -24,9 +24,17 @@ $ gitsmv --help
   Options
     --fetch  Fetch upstream branches [Default: false]
     --debug  Display executed commands [Default: false]
+    --match regexp  Filter entries by paths [Default: all]
+    --track branch  Extra branches to track  nr of commits between them and HEAD [Default: none]
+    --no-color  Disable colors
 
   Examples
-    $ gitsmv
+    $ gitsmvs
+    $ gitsmv --help
+    $ gitsmv --debug
+    $ gitsmv --fetch
+    $ gitsmv --fetch --match 'submod*'
+    $ gitsmv --fetch --track develop --track master
 ```
 
 

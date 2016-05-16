@@ -3,16 +3,12 @@
 const chalk = require('chalk');
 const async = require('async');
 const columnify = require('columnify');
+const sliceAsci = require('slice-ansi');
 
 const columnifyOptions = {
 	columnSplitter: chalk.gray(' | '),
 	showHeaders: false,
 	config: {
-		lastCommitData: {
-			align: 'left',
-			truncate: true,
-			width: 20
-		}
 	}
 };
 
@@ -78,6 +74,22 @@ const readGitModules = (path, callback) => {
 	readDir(path);
 };
 
+const transformDiff = params => {
+	const map = {
+		'': () => '',
+		'0': () => chalk.cyan.bold('−')
+	};
+
+	return val => {
+		const color = params.up ? 'green' : 'red';
+		const arrow = params.up ? '↑' : '↓';
+
+		const def = val => chalk[color].bold(val + arrow);
+
+		return (map[val] || def)(val);
+	};
+};
+
 const columns = [
 	{
 		id: 'Path',
@@ -102,34 +114,31 @@ const columns = [
 	{
 		id: 'LocalCommits',
 		resolve: methods => methods.branchAhead,
-		transform: val => {
-			const map = {
-				'': () => '',
-				'0': () => chalk.cyan.bold('−')
-			};
-
-			const def = val => chalk.green.bold(val + '↑');
-
-			return (map[val] || def)(val);
-		}
+		transform: transformDiff({up: true})
 	},
 	{
 		id: 'UpstreamCommits',
 		resolve: methods => methods.branchBehind,
-		transform: val => {
-			const map = {
-				'': () => '',
-				'0': () => chalk.cyan.bold('−')
-			};
-
-			const def = val => chalk.red.bold(val + '↓');
-
-			return (map[val] || def)(val);
-		}
+		transform: transformDiff({down: true})
 	},
 	{
-		id: 'lastCommitData',
-		resolve: methods => methods.lastCommitData
+		id: 'lastCommitHash',
+		resolve: methods => methods.lastCommitHash,
+		transform: val => chalk.green(val)
+	},
+	{
+		id: 'lastCommitDate',
+		resolve: methods => methods.lastCommitDate,
+		transform: val => chalk.yellow(val)
+	},
+	{
+		id: 'lastCommitAuthor',
+		resolve: methods => methods.lastCommitAuthor,
+		transform: val => chalk.blue(val)
+	},
+	{
+		id: 'lastCommitMessage',
+		resolve: methods => methods.lastCommitMessage
 	}
 ];
 
@@ -137,7 +146,7 @@ const Methods = require('./methods.js');
 
 const readForPath = path => callback => {
 	const methods = new Methods(exec(path), options);
-	const dependencies = columns.map(col => col.resolve(methods));
+	const dependencies = columns.map(col => col.resolve(methods, col));
 
 	async.parallel(
 		dependencies,
@@ -159,6 +168,14 @@ const transformToDisplay = results => {
 };
 
 const readPaths = (paths, callback) => {
+	paths = paths.filter(p => {
+		if (p === './') {
+			return true;
+		}
+
+		return options.match ? p.match(options.match) : true;
+	});
+
 	const pathData = paths.map(readForPath);
 
 	async.parallel(pathData, (err, results) => {
@@ -169,12 +186,35 @@ const readPaths = (paths, callback) => {
 			log(err);
 		}
 
-		callback(toDisplayColumnify);
+		const toDisplayColumnifyTrimmed = toDisplayColumnify.split('\n').map(line => {
+			return sliceAsci(line, 0, 116);
+		}).join('\n');
+
+		callback(toDisplayColumnifyTrimmed);
 	});
+};
+
+var addCustomBranchToTrack = branch => {
+	const customBranch = {
+		id: `Custom-${branch}`,
+		branch: branch,
+		resolve: (methods, col) => methods.customBranchBehind(col.branch),
+		transform: transformDiff({down: true})
+	};
+
+	columns.splice(4, 0, customBranch);
 };
 
 const cli = (opt, callback) => {
 	Object.assign(options, opt);
+
+	if (options.track) {
+		if (typeof options.track === 'string') {
+			addCustomBranchToTrack(options.track);
+		} else {
+			options.track.reverse().forEach(t => addCustomBranchToTrack(t));
+		}
+	}
 
 	readGitModules('./', paths => readPaths(paths, callback));
 };

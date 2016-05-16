@@ -1,6 +1,6 @@
 {
   "name": "gitsmv",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Display dashboard with statuses of submodules",
   "license": "MIT",
   "repository": "elmccd/gitsmv",
@@ -11,7 +11,7 @@
   },
   "bin": "cli.js",
   "engines": {
-    "node": ">=6.0"
+    "node": ">=4.0"
   },
   "scripts": {
     "test": "xo && ava"
@@ -34,7 +34,8 @@
     "async-once": "^1.0.0",
     "chalk": "^1.1.3",
     "columnify": "^1.5.4",
-    "meow": "^3.7.0"
+    "meow": "^3.7.0",
+    "slice-ansi": "0.0.4"
   },
   "devDependencies": {
     "ava": "^0.14.0",

@@ -3,33 +3,35 @@
 const async = require('async');
 
 module.exports = function (exec, options) {
-	var pwd = cb => exec('pwd', cb);
+	const pwd = cb => exec('pwd', cb);
 
-	var currentBranch = cb => exec('git rev-parse --abbrev-ref HEAD', cb);
+	const currentBranch = cb => exec('git rev-parse --abbrev-ref HEAD', cb);
 
-	var currentUpstream = cb => exec('git rev-parse --abbrev-ref --symbolic-full-name @{u}', cb);
+	const currentUpstream = cb => exec('git rev-parse --abbrev-ref --symbolic-full-name @{u}', cb);
 
-	var fetchOrigin = (res, cb) => {
+	const fetchOrigin = (res, cb) => {
 		if (options.fetch) {
-			let branch = res.upBranch.replace(/^origin\//, '');
-			exec(`git fetch origin ${branch}`, cb);
+			exec(`git fetch origin ${res.upBranch}`, cb);
 		} else {
 			cb(null, null);
 		}
 	};
 
-	var lastCommitData = cb => exec(
-		`git log --pretty=format:"%C(green)%h %C(yellow)[%ad] %Cblue[%cn]  %Creset%s" --decorate --date=relative -n 1`,
-		cb
-	);
+	const lastCommitHash = cb => exec(`git log --pretty=format:"%h" --decorate -n 1`, cb);
 
-	var getUpBranch = (res, cb) => {
-		const upBranch = res.currentUpstream || `origin/${res.currentBranch}`;
+	const lastCommitDate = cb => exec(`git log --pretty=format:"%ad" --decorate --date=relative -n 1`, cb);
+
+	const lastCommitAuthor = cb => exec(`git log --pretty=format:"%cn" --decorate -n 1`, cb);
+
+	const lastCommitMessage = cb => exec(`git log --pretty=format:"%s" --decorate -n 1`, cb);
+
+	const getUpBranch = (res, cb) => {
+		const upBranch = res.currentUpstream ? res.currentUpstream : 'origin/' + res.currentBranch;
 
 		cb(null, upBranch);
 	};
 
-	var branchBehind = cb => {
+	const branchBehind = cb => {
 		async.auto({
 			currentBranch,
 			currentUpstream,
@@ -44,7 +46,7 @@ module.exports = function (exec, options) {
 		});
 	};
 
-	var branchAhead = cb => {
+	const branchAhead = cb => {
 		async.auto({
 			currentBranch,
 			currentUpstream,
@@ -59,11 +61,28 @@ module.exports = function (exec, options) {
 		});
 	};
 
+	const customBranchBehind = (branch) => cb => {
+		async.auto({
+			upBranch: async.constant(branch),
+			fetchOrigin: ['upBranch', fetchOrigin]
+		}, (err) => {
+			if (err) {
+				console.log(err);
+			}
+
+			exec(`git log ${branch}..origin/${branch} --pretty=oneline | wc -l`, cb);
+		});
+	};
+
 	return {
 		pwd,
 		currentBranch,
 		currentUpstream,
-		lastCommitData,
+		lastCommitHash,
+		lastCommitDate,
+		lastCommitAuthor,
+		lastCommitMessage,
+		customBranchBehind,
 		branchAhead,
 		branchBehind
 	};

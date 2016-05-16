@@ -10,6 +10,9 @@ var cli = meow([
 	'Options',
 	'  --fetch  Fetch upstream branches [Default: false]',
 	'  --debug  Display executed commands [Default: false]',
+	'  --match=regexp  Filter entries by paths [Default: all]',
+	'  --track=branch  Extra branches to track number of commits in origin/[branch] but not in HEAD [Default: none]',
+	'  --no-color  Disable colors',
 	'',
 	'Examples',
 	'  $ gitsmv'
