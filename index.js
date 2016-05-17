@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const async = require('async');
 const columnify = require('columnify');
 const sliceAsci = require('slice-ansi');
+const size = require('window-size');
 
 const columnifyOptions = {
 	columnSplitter: chalk.gray(' | '),
@@ -187,7 +188,7 @@ const readPaths = (paths, callback) => {
 		}
 
 		const toDisplayColumnifyTrimmed = toDisplayColumnify.split('\n').map(line => {
-			return sliceAsci(line, 0, 116);
+			return sliceAsci(line, 0, size.width);
 		}).join('\n');
 
 		callback(toDisplayColumnifyTrimmed);
