@@ -2,6 +2,8 @@
 
 > Show dashboard listing statuses of all git submodules
 
+![alt text](https://raw.githubusercontent.com/elmccd/gitsmv/master/screenshot.png "Logo Title Text 1")
+
 ## CLI
 
 ```
