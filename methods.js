@@ -5,6 +5,8 @@ const async = require('async');
 module.exports = function (exec, options) {
 	const pwd = cb => exec('pwd', cb);
 
+	const status = cb => exec('git status --porcelain', cb);
+
 	const currentBranch = cb => exec('git rev-parse --abbrev-ref HEAD', cb);
 
 	const currentUpstream = cb => exec('git rev-parse --abbrev-ref --symbolic-full-name @{u}', cb);
@@ -63,19 +65,21 @@ module.exports = function (exec, options) {
 
 	const customBranchBehind = (branch) => cb => {
 		async.auto({
+			currentBranch,
 			upBranch: async.constant(branch),
 			fetchOrigin: ['upBranch', fetchOrigin]
-		}, (err) => {
+		}, (err, res) => {
 			if (err) {
 				console.log(err);
 			}
 
-			exec(`git log ${branch}..origin/${branch} --pretty=oneline | wc -l`, cb);
+			exec(`git log ${res.currentBranch}..origin/${branch} --pretty=oneline | wc -l`, cb);
 		});
 	};
 
 	return {
 		pwd,
+		status,
 		currentBranch,
 		currentUpstream,
 		lastCommitHash,

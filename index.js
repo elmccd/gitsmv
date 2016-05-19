@@ -123,6 +123,24 @@ const columns = [
 		transform: transformDiff({down: true})
 	},
 	{
+		id: 'Status',
+		resolve: methods => methods.status,
+		transform: val => {
+			var statuses = val
+				.trim()
+				.split('\n')
+				.map(l => l.substr(0, 2))
+				.filter(l => l !== '')
+				.filter(l => l !== '??');
+
+			if (statuses.length === 0) {
+				return chalk.green.bold('✔');
+			}
+
+			return chalk.red.bold('✘');
+		}
+	},
+	{
 		id: 'lastCommitHash',
 		resolve: methods => methods.lastCommitHash,
 		transform: val => chalk.green(val)
@@ -203,7 +221,7 @@ var addCustomBranchToTrack = branch => {
 		transform: transformDiff({down: true})
 	};
 
-	columns.splice(4, 0, customBranch);
+	columns.splice(5, 0, customBranch);
 };
 
 const cli = (opt, callback) => {
